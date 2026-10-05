@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ThermoLag · Heat-Health Operations</title>
+  <meta name="description" content="Aikyam ThermoLag — ward-level heat-health early warning prototype for SIH 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="boot" class="boot"><div class="boot-box"><div class="spinner"></div><b>Connecting to ThermoLag</b><span id="bootText">Waking the prototype API…</span></div></div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand-mark"><span>TL</span></div>
+    <button class="nav active" data-scroll="overview" title="Overview">⌂</button>
+    <button class="nav" data-scroll="mapSection" title="Ward map">◉</button>
+    <button class="nav" data-scroll="forecast" title="Forecast">⌁</button>
+    <button class="nav" data-scroll="alerts" title="Alerts">!</button>
+    <div class="side-spacer"></div>
+    <div class="sih-mini">SIH<br><strong>26</strong></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb"><span class="dot"></span><span>THERMOLAG</span><em>/</em><strong>Operational Dashboard</strong></div>
+      <div class="top-actions">
+        <label class="scenario"><span>Scenario</span><select id="scenario"><option value="heatwave">Heatwave</option><option value="humid">Humid heat</option><option value="mild">Mild baseline</option></select></label>
+        <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+        <div class="live"><i></i> DEMO LIVE</div>
+      </div>
+    </header>
+
+    <section id="overview" class="hero">
+      <div>
+        <div class="eyebrow">AIKYAM · SIH 2026 · SIH26083 · DISASTER MANAGEMENT</div>
+        <h1>Built for <span>predictability.</span><br>Designed for <span>municipal action.</span></h1>
+        <p>Ward-level, impact-based heat-health forecasting using UTCI, WBGT, lagged risk, vulnerability and approval-gated municipal actions.</p>
+      </div>
+      <div class="hero-status"><span class="status-ring"></span><div><b>Forecast pipeline</b><small>Forecast weather → UTCI / WBGT → Risk Proxy → Action</small><small>IMD / ECMWF inputs · demo scenario in prototype</small></div></div>
+    </section>
+
+    <section class="kpis">
+      <article class="kpi"><div class="kpi-icon blue">◌</div><div><small>WARDS MONITORED</small><strong id="wardCount">—</strong><span>Ward-level demo coverage</span></div></article>
+      <article class="kpi"><div class="kpi-icon red">!</div><div><small>HIGH / EXTREME NOW</small><strong id="highCount">—</strong><span id="highSub">Priority wards now</span></div></article>
+      <article class="kpi"><div class="kpi-icon orange">◒</div><div><small>PEAK RISK PROXY</small><strong id="peakScore">—</strong><span id="peakDate">—</span></div></article>
+      <article class="kpi"><div class="kpi-icon green">✓</div><div><small>ALERT STATUS</small><strong id="alertCount">0</strong><span>Pending approval</span></div></article>
+    </section>
+
+    <section id="mapSection" class="grid-main">
+      <article class="panel map-panel">
+        <div class="panel-head"><div><div class="eyebrow">GIS WARD VIEW</div><h2>Heat-health risk map</h2></div><div class="legend"><span><i class="low"></i>Low</span><span><i class="mod"></i>Moderate</span><span><i class="high"></i>High</span><span><i class="ext"></i>Extreme</span></div></div>
+        <div class="map-wrap"><div id="map"></div><div class="map-badge"><b>Delhi demo pilot</b><span>12 demo wards · 5-day outlook</span></div></div>
+      </article>
+
+      <aside class="panel detail-panel">
+        <div class="panel-head"><div><div class="eyebrow">SELECTED WARD</div><h2 id="wardTitle">Select a ward</h2></div><button class="small-btn" id="centerBtn">Center</button></div>
+        <div class="ward-risk"><div><span id="tierPill" class="pill low">LOW</span><b id="riskScore">—</b><small>Risk proxy / 100</small></div><div class="confidence"><span id="confidence">—</span><small>confidence</small><small id="riskCI">CI —</small></div></div>
+        <div class="why"><div class="why-title">Why this ward?</div><p id="reason">Choose a ward on the map to see the thermal and vulnerability drivers.</p></div>
+        <div class="metrics-2">
+          <div><small>UTCI</small><b id="utci">—</b><span>°C</span></div><div><small>WBGT</small><b id="wbgt">—</b><span>°C</span></div>
+          <div><small>Humidity</small><b id="humidity">—</b><span>%</span></div><div><small>Wind</small><b id="wind">—</b><span>m/s</span></div>
+        </div>
+        <div class="vuln"><div><span>Vulnerability</span><b id="vuln">—</b></div><div class="bar"><i id="vulnBar"></i></div><small id="vulnText">Elderly + outdoor-worker exposure</small></div>
+        <button class="primary" id="draftBtn">Create approval-gated alert</button>
+      </aside>
+    </section>
+
+    <section id="forecast" class="grid-lower">
+      <article class="panel forecast-panel">
+        <div class="panel-head"><div><div class="eyebrow">FORECAST ANALYTICS</div><h2>5-day ward outlook</h2></div><div class="tabs"><button class="tab active">Risk</button><button class="tab">UTCI</button><button class="tab">WBGT</button></div></div>
+        <div id="forecastChart" class="chart"></div>
+        <div id="forecastDays" class="forecast-days"></div>
+      </article>
+      <article class="panel action-panel">
+        <div class="panel-head"><div><div class="eyebrow">OPERATIONAL ANALYTICS</div><h2>Recommended action</h2></div></div>
+        <div class="action-tier"><span id="actionTier" class="pill low">LOW</span><span id="actionLead">Routine monitoring</span></div><div class="response-roles"><b>Who acts</b><span>City operations · Hospitals · Control room · Communities</span></div>
+        <ul id="actions"></ul>
+        <div class="honesty"><span>i</span><div><b>Model boundary & phased path</b><p>Demo: Heat-Health Risk Proxy → Pilot: aggregate/de-identified ward-day health counts → Operational: calibrated Mortality Risk Index (MRI). Risk tiers are subject to city-approved thresholds.</p></div></div>
+      </article>
+    </section>
+
+    <section id="alerts" class="panel alerts-panel">
+      <div class="panel-head"><div><div class="eyebrow">ACTION & ALERT LAYER</div><h2>Approval queue</h2></div><span class="approval-note">CAP-compatible · approval required before release</span></div>
+      <div id="alertList" class="alert-list"><div class="empty">No draft alerts yet. Select a high-risk ward and create one.</div></div>
+    </section>
+
+    <footer><b>ThermoLag · Aikyam</b><span>Prototype mode · Free-tier demo · Supports, not replaces, municipal heat action plans.</span><span>UTCI + WBGT · SB-DLNM-inspired lagged proxy · CAP-compatible alert</span></footer>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
